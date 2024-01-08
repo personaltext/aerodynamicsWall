@@ -1,0 +1,120 @@
+# aerodynamicsWall
+#Ball motion on the air with air drag variations.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+#Runge-Kutta 4th order in general
+
+def RKCoeff(func,field,Step,time):
+    k1 = func(time,field)
+    k2 = func(time+Step/2,field+Step*k1/2)
+    k3 = func(time+Step/2,field+Step*k2/2)
+    k4 = func(time+Step,field+Step*k3)
+    return Step*(k1+2*k2+2*k3+k4)/6
+
+def rungeKutta4(func,initial,deltaT,totalPoint):
+    numbers = np.zeros([totalPoint, len(initial)], dtype=float)
+    numbers[0] = initial
+    for i in np.arange(1,totalPoint):
+        numbers[i] = numbers[i-1] + RKCoeff(func, numbers[i-1], deltaT, i*deltaT)
+
+    return numbers
+
+  def acceleration1(time,field):
+    drag1 = 0.1
+    mass = 0.8
+    gravity = 9.79
+    speed = np.sqrt(field[2]**2+field[3]**2)
+    accX1 = -drag1*speed*field[2]/mass
+    accY1 = -drag1*speed*field[3]/mass-gravity
+
+    return np.array([field[2],field[3],accX1,accY1])
+
+def acceleration2(time,field):
+    drag2 = 0.25
+    mass = 0.8
+    gravity = 9.79
+    speed = np.sqrt(field[2]**2+field[3]**2)
+    accX2 = -drag2*speed*field[2]/mass
+    accY2 = -drag2*speed*field[3]/mass-gravity
+
+    return np.array([field[2],field[3],accX2,accY2])
+
+def acceleration3(time,field):
+    drag3 = 0.40
+    mass = 0.8
+    gravity = 9.79
+    speed = np.sqrt(field[2]**2+field[3]**2)
+    accX3 = -drag3*speed*field[2]/mass
+    accY3 = -drag3*speed*field[3]/mass-gravity
+
+    return np.array([field[2],field[3],accX3,accY3])
+
+def acceleration4(time,field):
+    drag4 = 0.55
+    mass = 0.8
+    gravity = 9.8
+    speed = np.sqrt(field[2]**2+field[3]**2)
+    accX4 = -drag4*speed*field[2]/mass
+    accY4 = -drag4*speed*field[3]/mass-gravity
+
+    return np.array([field[2],field[3],accX4,accY4])
+
+def GetData1(initial,Step,totalPoint):
+    field1 = rungeKutta4(acceleration1,initial,Step,totalPoint)
+    return field1
+
+def GetData2(initial,Step,totalPoint):
+    field2 = rungeKutta4(acceleration2,initial,Step,totalPoint)
+    return field2
+
+def GetData3(initial,Step,totalPoint):
+    field3 = rungeKutta4(acceleration3,initial,Step,totalPoint)
+    return field3
+
+def GetData4(initial,Step,totalPoint):
+    field4 = rungeKutta4(acceleration4,initial,Step,totalPoint)
+    return field4
+
+sumData = 1000
+deltaT = 0.01
+finalTime = sumData*deltaT
+timeData = np.linspace(0,finalTime,sumData)
+
+
+posisiX = 0
+posisiY = 15
+v0x = 20
+v0y = 20
+
+initial = np.array([posisiX,posisiY,v0x,v0y])
+
+fieldA = GetData1(initial,deltaT,sumData)
+fieldB = GetData2(initial,deltaT,sumData)
+fieldC = GetData3(initial,deltaT,sumData)
+fieldD = GetData4(initial,deltaT,sumData)
+
+epsilon = 0.0000001
+xWall = 0
+initialNumber = 100
+vX = initial[2]
+
+maxLoop = 100
+loopControl = 0
+
+while (vX > epsilon) and (loopControl < maxLoop):
+    tempNew1 = rungeKutta4(acceleration1, initial, deltaT, sumData)
+    tempNew2 = rungeKutta4(acceleration2, initial, deltaT, sumData)
+    tempNew3 = rungeKutta4(acceleration3, initial, deltaT, sumData)
+    tempNew4 = rungeKutta4(acceleration4, initial, deltaT, sumData)
+    vX1 = tempNew1[-1,2]
+    xW1 = tempNew1[-1,0]
+    vX2 = tempNew2[-1,2]
+    xW2 = tempNew2[-1,0]
+    vX3 = tempNew3[-1,2]
+    xW3 = tempNew3[-1,0]
+    vX4 = tempNew4[-1,2]
+    xW4 = tempNew4[-1,0]
+    initialNumber += 100
+    loopControl += 1
